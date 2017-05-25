@@ -25,9 +25,9 @@ import java.util.List;
 
 public class GameView extends SurfaceView implements SurfaceHolder.Callback, SensorEventListener {
 
-    private final int mBoardWidth = 200;
+    private final int mBoardWidth = 500;
     private final int mBoardHeight = 40;
-    private final int mBallRedit = 20;
+    private final int mBallRedit = 50;
     private final Sensor mAccelSensor;
     //球当前坐标
     private int mCurBallX;
@@ -46,19 +46,24 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
     private Paint mBallPaint;
     //砖画笔
     private Paint mBrickPaint;
-    private boolean isEnd;
+    public boolean isEnd;
     //当前坐标
     private int mCurBoardX1;
     private int mCurBoardX2;
     //板子移动速度
-    private final int mBoardSpeed = 30;
+    private final int mBoardSpeed = 15;
     //球移动的速度
-    private final int mBallSpeed = 30;
+    private final int mBallSpeed = 20;
     private static final String TAG = GameView.class.getSimpleName();
-    private int mOrientation;
+    public int mOrientation;
     private GameThread mGameThread;
+    //球当前的运行状态
     private boolean isDown, isRight;
     private int state = -1;
+    //砖块的列数
+    private final int mBricksCol = 5;
+    //砖块的行数
+    private final int mBricksRow = 5;
     //砖块的宽、高
     private final int mBrickWidth = 100;
     private final int mBrickHeight = 80;
@@ -96,7 +101,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
         mBoardY2 = getHeight();
         mCurBoardX1 = mBoardX1;
         mCurBoardX2 = mBoardX2;
-        mBrick1X = (getWidth() - 3 * mBrickWidth - 2 * mBrickSpace) / 2;
+        mBrick1X = (getWidth() - mBricksCol * mBrickWidth - (mBricksCol - 1) * mBrickSpace) / 2;
         mGameThread = new GameThread();
         mGameThread.start();
     }
@@ -223,6 +228,14 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
                 mCurBallX -= mBallSpeed;
                 mCurBallY -= mBallSpeed;
                 break;
+            case 9:
+                mCurBallX -= mBallSpeed;
+                mCurBallY -= mBallSpeed;
+                break;
+            case 10:
+                mCurBallX += mBallSpeed;
+                mCurBallY -= mBallSpeed;
+                break;
             default:
                 mCurBallX -= mBallSpeed;
                 mCurBallY -= mBallSpeed;
@@ -273,6 +286,23 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
                     b.mBrickX2 = 0;
                     b.mBrickY1 = 0;
                     b.mBrickY2 = 0;
+                    if (!isDown && !isRight) {          //以左上角撞击砖块
+                        state = 3;
+                        isDown = true;
+                        isRight = false;
+                    } else if (!isDown && isRight) {   //以右上角撞击砖块
+                        state = 2;
+                        isDown = true;
+                        isRight = true;
+                    } else if (isDown && !isRight) {   //以左下角撞击砖块
+                        state = 9;
+                        isDown = false;
+                        isRight = false;
+                    } else if (isDown && isRight) {     //以右下角撞击砖块
+                        state = 10;
+                        isDown = false;
+                        isRight = true;
+                    }
                 }
                 canvas.drawRect(b.mBrickX1, b.mBrickY1, b.mBrickX2, b.mBrickY2, mBrickPaint);
             }
@@ -297,9 +327,9 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
 
     public void initBrick() {
         mBricks = new ArrayList<>();
-        for (int i = 0; i < 1; i++) {//两行三列
+        for (int i = 0; i < mBricksRow; i++) {//砖块的行列数
             List<Brick> mBrickRow = new ArrayList<>();
-            for (int j = 0; j < 3; j++) {
+            for (int j = 0; j < mBricksCol; j++) {
                 mBrickRow.add(new Brick(mBrick1X + j * (mBrickWidth + mBrickSpace), mBallRedit * 6 + i * (mBrickSpace + mBrickHeight), mBrick1X + j * (mBrickWidth + mBrickSpace) + mBrickWidth, mBallRedit * 6 + mBrickHeight + i * (mBrickSpace + mBrickHeight)));
             }
             mBricks.add(mBrickRow);
@@ -323,7 +353,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
                     drawBall(mCanvas);
                     drawBoard(mCanvas);
                     drawBrick(mCanvas);
-                    Thread.sleep(100);
+                    Thread.sleep(10);
                     mHolder.unlockCanvasAndPost(mCanvas);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
