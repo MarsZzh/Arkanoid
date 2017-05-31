@@ -26,7 +26,7 @@ import java.util.List;
 public class GameView extends SurfaceView implements SurfaceHolder.Callback, SensorEventListener {
 
     private final int mBoardWidth = 500;
-    private final int mBoardHeight = 40;
+    private int mBoardHeight = 40;
     private final int mBallRedit = 50;
     private final Sensor mAccelSensor;
     //球当前坐标
@@ -71,6 +71,10 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
     private int mBrick1X;
     private List<List<Brick>> mBricks;
     private boolean isSuccess;
+    //砖块一开始距离屏幕顶端的高度
+    private final int mBrickInitHeight = 0;
+    //板子状态
+    private int mBrickState;
 
 
     public GameView(Context context) {
@@ -118,10 +122,16 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
         if (event.sensor.getType() == Sensor.TYPE_ACCELEROMETER) {
             float[] values = event.values;
 //            Log.e(TAG, "X--->" + values[0]);
+            Log.e(TAG, "Y--->" + values[1]);
             if (values[0] > 0)
                 mOrientation = 0;//右
             else if (values[0] < 0)
                 mOrientation = 1;//左
+
+            if (values[1] > 0)
+                mBrickState = 0;//板子向下收缩
+            else
+                mBrickState = 1;//板子向上伸长
         }
     }
 
@@ -268,6 +278,15 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
                 mCurBoardX2 += mBoardSpeed;
             }
         }
+        if (mBrickState == 1){
+            if (mBoardY1 >= 0){
+                  mBoardY1 -= 10;
+            }
+        }else if (mBrickState == 0){
+            if (mBoardY1 <= getHeight() - mBoardHeight){
+                mBoardY1 += 10;
+            }
+        }
 
     }
 
@@ -330,7 +349,7 @@ public class GameView extends SurfaceView implements SurfaceHolder.Callback, Sen
         for (int i = 0; i < mBricksRow; i++) {//砖块的行列数
             List<Brick> mBrickRow = new ArrayList<>();
             for (int j = 0; j < mBricksCol; j++) {
-                mBrickRow.add(new Brick(mBrick1X + j * (mBrickWidth + mBrickSpace), mBallRedit * 6 + i * (mBrickSpace + mBrickHeight), mBrick1X + j * (mBrickWidth + mBrickSpace) + mBrickWidth, mBallRedit * 6 + mBrickHeight + i * (mBrickSpace + mBrickHeight)));
+                mBrickRow.add(new Brick(mBrick1X + j * (mBrickWidth + mBrickSpace), mBrickInitHeight + i * (mBrickSpace + mBrickHeight), mBrick1X + j * (mBrickWidth + mBrickSpace) + mBrickWidth, mBrickInitHeight + mBrickHeight + i * (mBrickSpace + mBrickHeight)));
             }
             mBricks.add(mBrickRow);
         }
