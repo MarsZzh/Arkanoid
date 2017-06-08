@@ -7,3 +7,15 @@
 
 
 # 截图
+
+splash界面
+
+![screenshots](https://github.com/MarsZzh/Arkanoid/blob/master/screenshots/start.png)
+
+游戏界面
+
+![screenshots](https://github.com/MarsZzh/Arkanoid/blob/master/screenshots/playing.png)
+
+结束界面
+
+![screenshots](https://github.com/MarsZzh/Arkanoid/blob/master/screenshots/stop.png)
